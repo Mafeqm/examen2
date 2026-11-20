@@ -1,3 +1,5 @@
+<img width="480" height="270" alt="image" src="https://github.com/user-attachments/assets/9f59d1cf-abdc-44f5-9c43-75f07ad6c801" />
+
 # Sistema inteligente de análisis de incidentes tecnológicos y asistencia mediante IA
 
 Plataforma para registrar incidentes de soporte, administrar una base de conocimiento técnica, analizar indicadores con SQL y obtener orientación de un asistente de IA que responde **solo** con artículos verificados (RAG). Tiene tres roles (administrador, técnico y usuario), cada uno con su propia interfaz, y sesiones con JWT.
