@@ -8,7 +8,7 @@ import { kpiCard, animateCounters } from '../components/kpi-card.js';
 import { barChart, columnChart, lineChart, donutChart } from '../components/charts.js';
 import { skeletonKpis, skeletonChart, skeletonLines } from '../components/skeleton.js';
 import { errorState } from '../components/states.js';
-import { getDashboard } from '../services/analytics.service.js';
+import { getDashboard, getAbnormalIncreases } from '../services/analytics.service.js';
 import { listIncidents } from '../services/incidents.service.js';
 import { listCategories } from '../services/catalogs.service.js';
 import { ESTADO_INCIDENTE, PRIORIDAD, badge, optionsHtml } from '../catalogs.js';
@@ -71,6 +71,17 @@ export async function render(container, { route, signal }) {
       </form>
 
       <div id="d-kpis">${skeletonKpis(6)}</div>
+
+      <section class="card chart-card" id="d-alerts-card" aria-labelledby="d-alerts-title">
+        <div class="chart-card__head">
+          <div>
+            <h2 class="card__title" id="d-alerts-title">Alertas de incremento anormal</h2>
+            <p class="card__subtitle">Últimos 7 días completos frente a los 7 días anteriores por categoría (alerta ≥ 50 %)</p>
+          </div>
+          <span id="d-alerts-badge"></span>
+        </div>
+        <div class="stack stack--tight" id="d-alerts">${skeletonLines(4)}</div>
+      </section>
 
       <div class="dash-grid">
         ${chartCard('dc-weekly', 'Evolución semanal', 'Incidentes registrados y resueltos por semana', true)}
@@ -153,7 +164,7 @@ export async function render(container, { route, signal }) {
   }
 
   // Period summary: sentences computed from the real backend data
-  function heroHtml(d, dist, prev) {
+  function heroHtml(d, dist, prev, abnormal = []) {
     const now = new Date();
     const hour = now.getHours();
     const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
@@ -162,12 +173,13 @@ export async function render(container, { route, signal }) {
     const rate = d.resolutionRatePercentage ?? 0;
     const top = d.topCategories?.[0];
     const delta = prev ? pctChange(d.totalIncidents, prev.data.totalIncidents) : null;
-    // Number in Colombian Spanish format
+    const activeAlerts = abnormal.filter((item) => item.alert).length;
     const fmt = (n, digits = 1) => Number(n).toLocaleString('es-CO', { maximumFractionDigits: digits });
     const circumference = 2 * Math.PI * 52;
     const offset = circumference * (1 - Math.min(Math.max(rate, 0), 100) / 100);
 
     const chips = [
+      activeAlerts ? `<li class="hero__chip hero__chip--danger">${icon('i-alert')}${activeAlerts} ${activeAlerts === 1 ? 'categoría' : 'categorías'} con incremento anormal</li>` : '',
       dist.critical ? `<li class="hero__chip hero__chip--danger">${icon('i-alert')}${dist.critical} ${dist.critical === 1 ? 'crítico' : 'críticos'} sin resolver</li>` : '',
       top ? `<li class="hero__chip">${icon('i-layers')}Más frecuente: ${escapeHtml(top.categoryName)} (${fmt(top.percentageOfTotal)} %)</li>` : '',
       d.averageResolutionTimeHours ? `<li class="hero__chip">${icon('i-clock')}Atención promedio: ${fmt(d.averageResolutionTimeHours)} h</li>` : '',
@@ -202,12 +214,64 @@ export async function render(container, { route, signal }) {
       </div>`;
   }
 
-  // Paints the whole dashboard with the loaded data
-  function draw(d, incidents, prev) {
+  function renderAlerts(items = []) {
+    const fmt = (n) => Number(n ?? 0).toLocaleString('es-CO', { maximumFractionDigits: 2 });
+    const alerted = items.filter((item) => item.alert);
+    $('#d-alerts-badge').innerHTML = alerted.length
+      ? `<span class="badge badge--danger"><i class="badge__dot" aria-hidden="true"></i>${alerted.length} ${alerted.length === 1 ? 'alerta activa' : 'alertas activas'}</span>`
+      : '<span class="badge badge--success"><i class="badge__dot" aria-hidden="true"></i>Sin alertas activas</span>';
+
+    if (!items.length) {
+      $('#d-alerts').innerHTML = '<p class="cell-muted">No hay categorías registradas para comparar.</p>';
+      return;
+    }
+
+    const summary = alerted.length
+      ? `<p class="note note--danger">${icon('i-alert')}<span>Se detectaron incrementos anormales en: <strong>${alerted.map((a) => `${escapeHtml(a.categoryName)} (+${fmt(a.variationPercentage)} %)`).join(', ')}</strong>.</span></p>`
+      : '';
+
+    const rows = items.map((item) => {
+      const variation = Number(item.variationPercentage ?? 0);
+      const sign = variation > 0 ? '+' : '';
+      const trendClass = item.alert ? 'trend--bad' : variation < 0 ? 'trend--good' : 'trend--flat';
+      const trendIcon = variation > 0 ? icon('i-trend-up') : variation < 0 ? icon('i-trend-down') : '';
+      const statusBadge = item.alert
+        ? '<span class="badge badge--danger"><i class="badge__dot" aria-hidden="true"></i>Alerta</span>'
+        : '<span class="badge badge--neutral"><i class="badge__dot" aria-hidden="true"></i>Normal</span>';
+      return `
+        <tr>
+          <td><span class="cell-title">${escapeHtml(item.categoryName)}</span></td>
+          <td class="num">${item.currentPeriodCount}</td>
+          <td class="num">${item.previousPeriodCount}</td>
+          <td class="num"><span class="trend ${trendClass}">${trendIcon}${sign}${fmt(variation)} %</span></td>
+          <td>${statusBadge}</td>
+        </tr>`;
+    }).join('');
+
+    $('#d-alerts').innerHTML = `
+      ${summary}
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th class="num">Últimos 7 días</th>
+              <th class="num">7 días anteriores</th>
+              <th class="num">Variación</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }
+
+  function draw(d, incidents, prev, abnormal) {
     const dist = distributions(incidents);
-    $('#d-hero').innerHTML = heroHtml(d, dist, prev);
+    $('#d-hero').innerHTML = heroHtml(d, dist, prev, abnormal);
     kpis.innerHTML = kpisHtml(d, dist, prev);
     animateCounters(kpis);
+    renderAlerts(abnormal);
 
     const weekly = trendSeries(d.weeklyTrends ?? [], (w) => formatYearWeek(w.yearWeek));
     const monthly = trendSeries(d.monthlyTrends ?? [], (m) => formatYearMonth(m.yearMonth));
@@ -261,16 +325,17 @@ export async function render(container, { route, signal }) {
     errorEl.textContent = '';
     scope.textContent = 'Cargando…';
 
-    // Period comparison only with a closed range: the previous period has the same length.
     const prevRange = previousPeriod(filters.startDate, filters.endDate);
     let dashboard;
     let incidents;
     let previous = null;
+    let abnormal = [];
     try {
-      [dashboard, incidents, previous] = await Promise.all([
+      [dashboard, incidents, previous, abnormal] = await Promise.all([
         getDashboard(filters, { signal }),
         listIncidents(filters, { signal }),
         prevRange ? getDashboard({ ...filters, ...prevRange }, { signal }) : null,
+        getAbnormalIncreases({ signal }),
       ]);
     } catch (error) {
       if (signal.aborted) return;
@@ -283,7 +348,7 @@ export async function render(container, { route, signal }) {
     const active = Object.values(filters).filter(Boolean).length;
     scope.textContent = `${dashboard.totalIncidents} incidentes${active ? ` · ${active} ${active === 1 ? 'filtro' : 'filtros'}` : ''}`
       + (prevRange ? ' · comparado con el periodo anterior' : '');
-    draw(dashboard, incidents, previous ? { data: previous, days: prevRange.days } : null);
+    draw(dashboard, incidents, previous ? { data: previous, days: prevRange.days } : null, abnormal);
   }
 
   form.addEventListener('submit', (event) => { event.preventDefault(); load(); });

@@ -92,4 +92,13 @@ public class AnalyticsController {
     public ResponseEntity<List<MonthlyTrendDTO>> getMonthlyTrends(@ParameterObject AnalyticsFilterRequest filter) {
         return ResponseEntity.ok(analyticsService.getMonthlyTrends(filter));
     }
+
+    @Operation(
+        summary = "Detect abnormal incident increases per category",
+        description = "Compares the last 7 complete days against the previous 7 days for each category and flags increases of 50% or more."
+    )
+    @GetMapping("/abnormal-increases")
+    public ResponseEntity<List<CategoryAbnormalIncreaseDTO>> getAbnormalIncreases() {
+        return ResponseEntity.ok(analyticsService.getAbnormalIncreases());
+    }
 }

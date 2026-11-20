@@ -10,8 +10,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 // Analytics service (RF06) that computes the 10 real KPIs in the database with JPQL queries.
 // Every indicator accepts the same optional filters: category, priority and date range.
@@ -21,6 +25,8 @@ public class AnalyticsService {
 
     // Default SLA threshold: a pending incident unresolved for more than 48 hours is considered overdue
     private static final long SLA_OVERDUE_HOURS = 48L;
+    private static final int COMPARISON_WINDOW_DAYS = 7;
+    private static final double ABNORMAL_INCREASE_THRESHOLD = 50.0;
 
     private final IncidentRepository incidentRepository;
     private final RatingRepository ratingRepository;
@@ -165,6 +171,50 @@ public class AnalyticsService {
                         row[3] != null ? ((Number) row[3]).longValue() : 0L
                 ))
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CategoryAbnormalIncreaseDTO> getAbnormalIncreases() {
+        LocalDateTime currentEnd = LocalDate.now().atStartOfDay();
+        LocalDateTime currentStart = currentEnd.minusDays(COMPARISON_WINDOW_DAYS);
+        LocalDateTime previousStart = currentStart.minusDays(COMPARISON_WINDOW_DAYS);
+
+        List<Object[]> currentRows = incidentRepository.countByCategoryInPeriod(currentStart, currentEnd);
+        List<Object[]> previousRows = incidentRepository.countByCategoryInPeriod(previousStart, currentStart);
+
+        Map<Long, Long> previousByCategory = new LinkedHashMap<>();
+        for (Object[] row : previousRows) {
+            previousByCategory.put(((Number) row[0]).longValue(), ((Number) row[2]).longValue());
+        }
+
+        return currentRows.stream()
+                .map(row -> {
+                    Long categoryId = ((Number) row[0]).longValue();
+                    String categoryName = (String) row[1];
+                    long currentCount = ((Number) row[2]).longValue();
+                    long previousCount = previousByCategory.getOrDefault(categoryId, 0L);
+                    double variationPercentage = calculateVariationPercentage(currentCount, previousCount);
+                    boolean alert = variationPercentage >= ABNORMAL_INCREASE_THRESHOLD;
+                    return new CategoryAbnormalIncreaseDTO(
+                            categoryId,
+                            categoryName,
+                            currentCount,
+                            previousCount,
+                            variationPercentage,
+                            alert
+                    );
+                })
+                .sorted(Comparator.comparing(CategoryAbnormalIncreaseDTO::alert).reversed()
+                        .thenComparing(CategoryAbnormalIncreaseDTO::variationPercentage, Comparator.reverseOrder())
+                        .thenComparing(CategoryAbnormalIncreaseDTO::categoryName))
+                .toList();
+    }
+
+    private double calculateVariationPercentage(long currentCount, long previousCount) {
+        if (previousCount == 0L) {
+            return currentCount > 0L ? 100.0 : 0.0;
+        }
+        return roundToTwoDecimals(((currentCount - previousCount) * 100.0) / previousCount);
     }
 
     // Rounds decimals to 2 places for a clean display on the dashboard

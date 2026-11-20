@@ -157,4 +157,14 @@ public interface IncidentRepository extends JpaRepository<Incident, Long>, JpaSp
                                              @Param("priority") Priority priority,
                                              @Param("startDate") LocalDateTime startDate,
                                              @Param("endDate") LocalDateTime endDate);
+
+    @Query("""
+            SELECT c.id, c.name, COUNT(i.id)
+            FROM Category c
+            LEFT JOIN c.incidents i ON i.createdAt >= :startDate AND i.createdAt < :endDate
+            GROUP BY c.id, c.name
+            ORDER BY c.name ASC
+            """)
+    List<Object[]> countByCategoryInPeriod(@Param("startDate") LocalDateTime startDate,
+                                           @Param("endDate") LocalDateTime endDate);
 }

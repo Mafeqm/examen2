@@ -23,3 +23,5 @@ export const getTopCategories = (filters, options) => api.get(`${BASE}/top-categ
 
 /** WeeklyTrendDTO[]: { yearWeek: 'AAAA-WNN', totalReported, totalResolved } */
 export const getWeeklyTrends = (filters, options) => api.get(`${BASE}/weekly-trends`, { ...options, query: query(filters) });
+
+export const getAbnormalIncreases = (options) => api.get(`${BASE}/abnormal-increases`, options);
