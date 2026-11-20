@@ -1,0 +1,2916 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Intelligent Incident Analysis & AI Assistance API",
+        "description": "REST contracts for managing technology incidents and orchestrating AI assistance with n8n.",
+        "contact": {
+            "name": "Mafe - Development Branch",
+            "email": "mafe@incident-ai.dev"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8080",
+            "description": "Generated server url"
+        }
+    ],
+    "security": [
+        {
+            "bearerAuth": []
+        }
+    ],
+    "tags": [
+        {
+            "name": "Knowledge Base (RF02)",
+            "description": "Technical articles. Only active and verified ones are used as sources by the AI assistant."
+        },
+        {
+            "name": "AI Assistance (n8n Integration)",
+            "description": "Endpoints to trigger the analysis in n8n, store responses with their sources, rate suggestions and read the history"
+        },
+        {
+            "name": "Analytics & KPIs (RF06)",
+            "description": "Endpoints for resolution rate, average time, distribution by category/priority/status, weekly/monthly trends and pending/overdue incidents"
+        },
+        {
+            "name": "Authentication",
+            "description": "JWT login and profile of the authenticated user"
+        },
+        {
+            "name": "Incidents Management (RF01)",
+            "description": "Endpoints to create, read, update, change the status of and filter technology incidents"
+        },
+        {
+            "name": "Catalogs",
+            "description": "Technical categories and users for forms and filters"
+        }
+    ],
+    "paths": {
+        "/api/v1/knowledge-articles/{articleId}": {
+            "get": {
+                "tags": [
+                    "Knowledge Base (RF02)"
+                ],
+                "summary": "Get a knowledge article by ID",
+                "operationId": "getArticle",
+                "parameters": [
+                    {
+                        "name": "articleId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Article detail",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Knowledge Base (RF02)"
+                ],
+                "summary": "Update a knowledge article",
+                "description": "If the title or the content changes, the article becomes unverified again.",
+                "operationId": "updateArticle",
+                "parameters": [
+                    {
+                        "name": "articleId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/KnowledgeArticleRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Article updated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Article, category or author not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The new category is inactive",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incidents/{incidentId}": {
+            "get": {
+                "tags": [
+                    "Incidents Management (RF01)"
+                ],
+                "summary": "Get an incident by ID",
+                "operationId": "getIncident",
+                "parameters": [
+                    {
+                        "name": "incidentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Incident detail",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Incident not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Incidents Management (RF01)"
+                ],
+                "summary": "Update an existing incident's information",
+                "operationId": "updateIncident",
+                "parameters": [
+                    {
+                        "name": "incidentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateIncidentRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Incident information updated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Incident, user or category not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The incident is already closed (CLOSED) or the category is inactive",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/knowledge-articles": {
+            "get": {
+                "tags": [
+                    "Knowledge Base (RF02)"
+                ],
+                "summary": "Search knowledge articles",
+                "description": "Optional filters: q (text in the title or content), categoryId, active and verified.",
+                "operationId": "searchArticles",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "active",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "verified",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Articles that match the filters, newest first",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Filter with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Knowledge Base (RF02)"
+                ],
+                "summary": "Create a knowledge article",
+                "description": "The article starts active and unverified.",
+                "operationId": "createArticle",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/KnowledgeArticleRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Article created",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category or author not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The category is inactive",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incidents": {
+            "get": {
+                "tags": [
+                    "Incidents Management (RF01)"
+                ],
+                "summary": "Filter incidents dynamically by category, priority, status, user, and date range",
+                "operationId": "filterIncidents",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "OPEN",
+                                "IN_AI_ANALYSIS",
+                                "ASSIGNED_TO_TECH",
+                                "RESOLVED",
+                                "CLOSED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Incidents that match the filters, newest first",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IncidentResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority, status or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IncidentResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/IncidentResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Incidents Management (RF01)"
+                ],
+                "summary": "Register a new technological incident",
+                "description": "The incident starts in the OPEN status.",
+                "operationId": "createIncident",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateIncidentRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Incident registered",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User or category not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The category is inactive",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Log in and get a JWT",
+                "description": "Returns a Bearer token. Send it in the header Authorization: Bearer <token>.",
+                "operationId": "login",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Logged in",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Email or password with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Wrong email or password",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": []
+            }
+        },
+        "/api/v1/ai-assistance/responses": {
+            "post": {
+                "tags": [
+                    "AI Assistance (n8n Integration)"
+                ],
+                "summary": "Register AI response and sources (Callback webhook from n8n)",
+                "description": "Saves the n8n response (AiResponse) together with its sources (ResponseSource) and their similarity. Marks the AiQuery as COMPLETED when there are sources, or NO_RESULTS when n8n found no relevant documents. If app.callback.token is set, the X-Callback-Token header is required.",
+                "operationId": "registerAiResponse",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AiResponseDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "AiResponse and its sources saved",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or wrong callback token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Original AiQuery not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The query already has a response",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ai-assistance/responses/{aiResponseId}/ratings": {
+            "post": {
+                "tags": [
+                    "AI Assistance (n8n Integration)"
+                ],
+                "summary": "Rate an AI response",
+                "description": "Lets a technician or user rate from 1 to 5 how useful an AI-generated response was.",
+                "operationId": "rateAiResponse",
+                "parameters": [
+                    {
+                        "name": "aiResponseId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateRatingRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "201": {
+                        "description": "Rating recorded",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RatingResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Score outside 1 to 5 or incomplete data",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RatingResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "AI response or evaluating user not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RatingResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The AI response was already rated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RatingResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ai-assistance/request": {
+            "post": {
+                "tags": [
+                    "AI Assistance (n8n Integration)"
+                ],
+                "summary": "Request AI incident analysis (Trigger to n8n)",
+                "description": "Records the AiQuery, moves the incident to IN_AI_ANALYSIS, calls n8n over HTTP and marks COMMUNICATION_ERROR on a timeout or error.",
+                "operationId": "requestAiAssistance",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AiAssistanceRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "202": {
+                        "description": "Request accepted and saved in the database",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input (for example, an empty description)",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Incident not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The incident is closed (CLOSED)",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ai-assistance/queries/{aiQueryId}/failure": {
+            "post": {
+                "tags": [
+                    "AI Assistance (n8n Integration)"
+                ],
+                "summary": "Report an AI processing failure (Callback webhook from n8n)",
+                "description": "Marks the query as FAILED and stores the failure code and message. If app.callback.token is set, the X-Callback-Token header is required.",
+                "operationId": "reportFailure",
+                "parameters": [
+                    {
+                        "name": "aiQueryId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/AiFailureReportDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Failure recorded",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid input",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or wrong callback token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "AiQuery not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The query already has a response or the ID does not match",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/knowledge-articles/{articleId}/status": {
+            "patch": {
+                "tags": [
+                    "Knowledge Base (RF02)"
+                ],
+                "summary": "Activate, deactivate or verify a knowledge article",
+                "description": "Omitted fields do not change.",
+                "operationId": "updateStatus",
+                "parameters": [
+                    {
+                        "name": "articleId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateKnowledgeArticleStatusDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status updated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Article not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Neither active nor verified was sent",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/KnowledgeArticleResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/incidents/{incidentId}/status": {
+            "patch": {
+                "tags": [
+                    "Incidents Management (RF01)"
+                ],
+                "summary": "Update the status of an existing incident",
+                "operationId": "updateIncidentStatus",
+                "parameters": [
+                    {
+                        "name": "incidentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateIncidentStatusRequestDTO"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status updated",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or missing status",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Incident not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The incident is already closed (CLOSED)",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/IncidentResponseDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/users": {
+            "get": {
+                "tags": [
+                    "Catalogs"
+                ],
+                "summary": "List system users",
+                "description": "Optional filter by role: EMPLOYEE, SUPPORT_TECHNICIAN or ADMIN.",
+                "operationId": "listUsers",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "EMPLOYEE",
+                                "SUPPORT_TECHNICIAN",
+                                "ADMIN"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/UserSummaryDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/categories": {
+            "get": {
+                "tags": [
+                    "Catalogs"
+                ],
+                "summary": "List technical categories",
+                "description": "With activeOnly=true it returns only the active categories.",
+                "operationId": "listCategories",
+                "parameters": [
+                    {
+                        "name": "activeOnly",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoryResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Get the authenticated user",
+                "operationId": "me",
+                "responses": {
+                    "200": {
+                        "description": "User of the session",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserSummaryDTO"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No session or expired token",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserSummaryDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/analytics/weekly-trends": {
+            "get": {
+                "tags": [
+                    "Analytics & KPIs (RF06)"
+                ],
+                "summary": "Get weekly incident trends",
+                "description": "Groups incidents by ISO week (Year-Week), showing the number of reported and resolved incidents.",
+                "operationId": "getWeeklyTrends",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "description": "ID of the technical category",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "ID of the technical category",
+                            "example": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Priority level",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Priority level",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ],
+                            "example": "HIGH"
+                        },
+                        "example": "HIGH"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start date (ISO 8601)"
+                        },
+                        "example": "2026-10-01T00:00:00"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End date (ISO 8601)"
+                        },
+                        "example": "2026-11-30T23:59:59"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores calculados",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WeeklyTrendDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WeeklyTrendDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WeeklyTrendDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/analytics/top-categories": {
+            "get": {
+                "tags": [
+                    "Analytics & KPIs (RF06)"
+                ],
+                "summary": "Get most frequent incident categories",
+                "description": "Returns the categories ordered from most to fewest incidents, with their percentage of the filtered total.",
+                "operationId": "getTopCategories",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "description": "ID of the technical category",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "ID of the technical category",
+                            "example": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Priority level",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Priority level",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ],
+                            "example": "HIGH"
+                        },
+                        "example": "HIGH"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start date (ISO 8601)"
+                        },
+                        "example": "2026-10-01T00:00:00"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End date (ISO 8601)"
+                        },
+                        "example": "2026-11-30T23:59:59"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores calculados",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoryMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoryMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/CategoryMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/analytics/monthly-trends": {
+            "get": {
+                "tags": [
+                    "Analytics & KPIs (RF06)"
+                ],
+                "summary": "Get monthly incident trends",
+                "description": "Groups incidents by month (YYYY-MM), showing the number of reported and resolved incidents.",
+                "operationId": "getMonthlyTrends",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "description": "ID of the technical category",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "ID of the technical category",
+                            "example": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Priority level",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Priority level",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ],
+                            "example": "HIGH"
+                        },
+                        "example": "HIGH"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start date (ISO 8601)"
+                        },
+                        "example": "2026-10-01T00:00:00"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End date (ISO 8601)"
+                        },
+                        "example": "2026-11-30T23:59:59"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores calculados",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MonthlyTrendDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MonthlyTrendDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/MonthlyTrendDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/analytics/dashboard": {
+            "get": {
+                "tags": [
+                    "Analytics & KPIs (RF06)"
+                ],
+                "summary": "Get consolidated analytics dashboard KPIs (All 10 RF06 metrics)",
+                "description": "Computes in the database the total, pending, overdue, resolution rate, average time in hours, AI rating, categories, priorities, statuses and weekly/monthly trends.",
+                "operationId": "getDashboardMetrics",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "description": "ID of the technical category",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "ID of the technical category",
+                            "example": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Priority level",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Priority level",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ],
+                            "example": "HIGH"
+                        },
+                        "example": "HIGH"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start date (ISO 8601)"
+                        },
+                        "example": "2026-10-01T00:00:00"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End date (ISO 8601)"
+                        },
+                        "example": "2026-11-30T23:59:59"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores calculados",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AnalyticsDashboardDTO"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AnalyticsDashboardDTO"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/AnalyticsDashboardDTO"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/analytics/by-status": {
+            "get": {
+                "tags": [
+                    "Analytics & KPIs (RF06)"
+                ],
+                "summary": "Get incidents grouped by status",
+                "description": "Returns the count and percentage of incidents in each status (OPEN, IN_AI_ANALYSIS, ASSIGNED_TO_TECH, RESOLVED, CLOSED).",
+                "operationId": "getIncidentsByStatus",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "description": "ID of the technical category",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "ID of the technical category",
+                            "example": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Priority level",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Priority level",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ],
+                            "example": "HIGH"
+                        },
+                        "example": "HIGH"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start date (ISO 8601)"
+                        },
+                        "example": "2026-10-01T00:00:00"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End date (ISO 8601)"
+                        },
+                        "example": "2026-11-30T23:59:59"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores calculados",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StatusMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StatusMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StatusMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/analytics/by-priority": {
+            "get": {
+                "tags": [
+                    "Analytics & KPIs (RF06)"
+                ],
+                "summary": "Get incidents grouped by priority",
+                "description": "Returns the count and percentage of incidents for each priority level (LOW, MEDIUM, HIGH, CRITICAL).",
+                "operationId": "getIncidentsByPriority",
+                "parameters": [
+                    {
+                        "name": "categoryId",
+                        "in": "query",
+                        "description": "ID of the technical category",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64",
+                            "description": "ID of the technical category",
+                            "example": 1
+                        },
+                        "example": 1
+                    },
+                    {
+                        "name": "priority",
+                        "in": "query",
+                        "description": "Priority level",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "description": "Priority level",
+                            "enum": [
+                                "LOW",
+                                "MEDIUM",
+                                "HIGH",
+                                "CRITICAL"
+                            ],
+                            "example": "HIGH"
+                        },
+                        "example": "HIGH"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Start date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "Start date (ISO 8601)"
+                        },
+                        "example": "2026-10-01T00:00:00"
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "End date (ISO 8601)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time",
+                            "description": "End date (ISO 8601)"
+                        },
+                        "example": "2026-11-30T23:59:59"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Indicadores calculados",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PriorityMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Priority or date with an invalid format",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PriorityMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "The start date is after the end date",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/PriorityMetricDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ai-assistance/incidents/{incidentId}/history": {
+            "get": {
+                "tags": [
+                    "AI Assistance (n8n Integration)"
+                ],
+                "summary": "Get AI query history for an incident",
+                "description": "Returns every query sent to n8n for an incident, with its responses, sources, similarities and ratings.",
+                "operationId": "getIncidentAiHistory",
+                "parameters": [
+                    {
+                        "name": "incidentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "History of the incident",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AiQueryHistoryResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Incident not found",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AiQueryHistoryResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/ai-assistance/history": {
+            "get": {
+                "tags": [
+                    "AI Assistance (n8n Integration)"
+                ],
+                "summary": "Get global AI query history",
+                "description": "Returns every AI query, newest first. Optional filter by status.",
+                "operationId": "getAiHistory",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "PENDING",
+                                "COMPLETED",
+                                "NO_RESULTS",
+                                "COMMUNICATION_ERROR",
+                                "FAILED"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Global history",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AiQueryHistoryResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query status",
+                        "content": {
+                            "*/*": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/AiQueryHistoryResponseDTO"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "KnowledgeArticleRequestDTO": {
+                "type": "object",
+                "description": "Data to create or edit a technical knowledge base article",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Article title",
+                        "example": "IPSec VPN Error 809 Troubleshooting Runbook",
+                        "maxLength": 180,
+                        "minLength": 5
+                    },
+                    "problem": {
+                        "type": "string",
+                        "description": "Description of the problem",
+                        "example": "Remote users cannot establish the corporate VPN tunnel.",
+                        "maxLength": 4000,
+                        "minLength": 10
+                    },
+                    "symptoms": {
+                        "type": "string",
+                        "description": "Observable symptoms (optional)",
+                        "example": "Windows 11 shows error 809 when connecting.",
+                        "maxLength": 4000,
+                        "minLength": 0
+                    },
+                    "cause": {
+                        "type": "string",
+                        "description": "Root cause (optional)",
+                        "example": "The perimeter firewall blocks UDP 500 and 4500 (NAT-T).",
+                        "maxLength": 4000,
+                        "minLength": 0
+                    },
+                    "solution": {
+                        "type": "string",
+                        "description": "Solution or steps to resolve it",
+                        "example": "1. Allow UDP 500/4500 on the firewall. 2. Restart IKEEXT on the client.",
+                        "maxLength": 8000,
+                        "minLength": 10
+                    },
+                    "referenceUrl": {
+                        "type": "string",
+                        "description": "Optional reference URL (http or https)",
+                        "example": "https://kb.enterprise.io/net/vpn-error-809",
+                        "maxLength": 500,
+                        "minLength": 0,
+                        "pattern": "^$|^https?://.+"
+                    },
+                    "categoryId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the technical category",
+                        "example": 1
+                    },
+                    "authorUserId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the user who writes the article (optional)",
+                        "example": 2
+                    }
+                },
+                "required": [
+                    "categoryId",
+                    "problem",
+                    "solution",
+                    "title"
+                ]
+            },
+            "KnowledgeArticleResponseDTO": {
+                "type": "object",
+                "description": "Technical knowledge base article",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "content": {
+                        "type": "string"
+                    },
+                    "problem": {
+                        "type": "string"
+                    },
+                    "symptoms": {
+                        "type": "string"
+                    },
+                    "cause": {
+                        "type": "string"
+                    },
+                    "solution": {
+                        "type": "string"
+                    },
+                    "referenceUrl": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    },
+                    "verified": {
+                        "type": "boolean"
+                    },
+                    "categoryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "categoryName": {
+                        "type": "string"
+                    },
+                    "authorUserId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "authorFullName": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "CreateIncidentRequestDTO": {
+                "type": "object",
+                "description": "Data required to register a new incident in the system",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Descriptive title of the incident",
+                        "example": "Database connection pool exhausted in ERP",
+                        "maxLength": 150,
+                        "minLength": 5
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Detailed description of the symptom or technical error",
+                        "example": "HikariPool-1 timeouts occurring every 10 minutes on production node 2",
+                        "maxLength": 4000,
+                        "minLength": 20
+                    },
+                    "priority": {
+                        "type": "string",
+                        "description": "Priority level of the incident",
+                        "enum": [
+                            "LOW",
+                            "MEDIUM",
+                            "HIGH",
+                            "CRITICAL"
+                        ],
+                        "example": "CRITICAL"
+                    },
+                    "userId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the user who reports the incident",
+                        "example": 1
+                    },
+                    "categoryId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the related technical category",
+                        "example": 2
+                    }
+                },
+                "required": [
+                    "categoryId",
+                    "description",
+                    "priority",
+                    "title",
+                    "userId"
+                ]
+            },
+            "IncidentResponseDTO": {
+                "type": "object",
+                "description": "Response with the detail of a registered incident",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "priority": {
+                        "type": "string",
+                        "enum": [
+                            "LOW",
+                            "MEDIUM",
+                            "HIGH",
+                            "CRITICAL"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "OPEN",
+                            "IN_AI_ANALYSIS",
+                            "ASSIGNED_TO_TECH",
+                            "RESOLVED",
+                            "CLOSED"
+                        ]
+                    },
+                    "userId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "userFullName": {
+                        "type": "string"
+                    },
+                    "categoryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "categoryName": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "resolvedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "LoginRequestDTO": {
+                "type": "object",
+                "description": "User email and password",
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "sarah.jenkins@enterprise.io",
+                        "maxLength": 120,
+                        "minLength": 0
+                    },
+                    "password": {
+                        "type": "string",
+                        "maxLength": 72,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "email",
+                    "password"
+                ]
+            },
+            "LoginResponseDTO": {
+                "type": "object",
+                "description": "Access token and authenticated user",
+                "properties": {
+                    "accessToken": {
+                        "type": "string"
+                    },
+                    "tokenType": {
+                        "type": "string"
+                    },
+                    "expiresAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "user": {
+                        "$ref": "#/components/schemas/UserSummaryDTO"
+                    }
+                }
+            },
+            "UserSummaryDTO": {
+                "type": "object",
+                "description": "Summary of a system user",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "EMPLOYEE",
+                            "SUPPORT_TECHNICIAN",
+                            "ADMIN"
+                        ]
+                    }
+                }
+            },
+            "AiResponseDTO": {
+                "type": "object",
+                "description": "REST contract that n8n sends back with the AI diagnosis and its source documents",
+                "properties": {
+                    "aiQueryId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the original AI query (AiQuery) that triggered the analysis",
+                        "example": 55
+                    },
+                    "suggestedDiagnosis": {
+                        "type": "string",
+                        "description": "Likely diagnosis generated by the AI agent",
+                        "example": "Possible UDP port 500/4500 (IPSec NAT-T) block on perimeter firewall"
+                    },
+                    "solutionSteps": {
+                        "type": "string",
+                        "description": "Recommended steps to resolve the incident",
+                        "example": "1. Verify UDP 500 and 4500 rules. 2. Restart IKEEXT service on client."
+                    },
+                    "confidenceScore": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Model confidence level between 0.0 and 1.0",
+                        "example": 0.92,
+                        "maximum": 1.0,
+                        "minimum": 0.0
+                    },
+                    "processingTimeMs": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total processing time of the n8n workflow, in milliseconds",
+                        "example": 2340
+                    },
+                    "sources": {
+                        "type": "array",
+                        "description": "List of articles or source documents that support the response (RAG)",
+                        "items": {
+                            "$ref": "#/components/schemas/SourceDTO"
+                        }
+                    }
+                },
+                "required": [
+                    "aiQueryId",
+                    "suggestedDiagnosis"
+                ]
+            },
+            "SourceDTO": {
+                "type": "object",
+                "description": "Source document or knowledge article cited by the AI",
+                "properties": {
+                    "knowledgeArticleId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Optional ID of the article in the knowledge_articles table",
+                        "example": 12
+                    },
+                    "sourceTitle": {
+                        "type": "string",
+                        "description": "Title of the manual, guide or reference ticket",
+                        "example": "IPSec VPN Runbook v3.1"
+                    },
+                    "referenceUrl": {
+                        "type": "string",
+                        "description": "URL or identifier of the document in the knowledge base",
+                        "example": "https://kb.company.internal/networking/vpn-error-809"
+                    },
+                    "citedSnippet": {
+                        "type": "string",
+                        "description": "Text excerpt extracted by the n8n RAG workflow",
+                        "example": "Error 809 occurs when IKE packets are blocked by NAT-T..."
+                    },
+                    "similarityScore": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Semantic similarity score between the incident and the source (0.0 to 1.0)",
+                        "example": 0.89,
+                        "maximum": 1.0,
+                        "minimum": 0.0
+                    }
+                },
+                "required": [
+                    "sourceTitle"
+                ]
+            },
+            "CreateRatingRequestDTO": {
+                "type": "object",
+                "description": "Request to record the human rating of an AI response",
+                "properties": {
+                    "evaluatorUserId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "ID of the user or technician who rates the response",
+                        "example": 1
+                    },
+                    "score": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "Score on a 1 to 5 star scale",
+                        "example": 5,
+                        "maximum": 5,
+                        "minimum": 1
+                    },
+                    "helpful": {
+                        "type": "boolean",
+                        "description": "Whether the AI suggestion helped to resolve the incident",
+                        "example": true
+                    },
+                    "feedbackComment": {
+                        "type": "string",
+                        "description": "Optional technical feedback comment",
+                        "example": "The suggested firewall rule check solved the VPN issue immediately",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "evaluatorUserId",
+                    "helpful",
+                    "score"
+                ]
+            },
+            "RatingResponseDTO": {
+                "type": "object",
+                "description": "Response with the data of the recorded rating",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "aiResponseId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "evaluatorUserId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "evaluatorFullName": {
+                        "type": "string"
+                    },
+                    "score": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "helpful": {
+                        "type": "boolean"
+                    },
+                    "feedbackComment": {
+                        "type": "string"
+                    },
+                    "ratedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "AiAssistanceRequestDTO": {
+                "type": "object",
+                "description": "REST contract to request the analysis of a technology incident in n8n",
+                "properties": {
+                    "incidentId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Unique ID of the incident registered in the system",
+                        "example": 101
+                    },
+                    "incidentTitle": {
+                        "type": "string",
+                        "description": "Short title of the incident",
+                        "example": "Intermittent corporate VPN tunnel drop"
+                    },
+                    "detailedDescription": {
+                        "type": "string",
+                        "description": "Detailed technical description of the reported problem",
+                        "example": "Remote users receive error 809 when connecting from Windows 11 clients",
+                        "maxLength": 2147483647,
+                        "minLength": 20
+                    },
+                    "categoryName": {
+                        "type": "string",
+                        "description": "Name of the incident category",
+                        "example": "Networking & Connectivity"
+                    },
+                    "priority": {
+                        "type": "string",
+                        "description": "Priority level of the incident",
+                        "example": "HIGH"
+                    },
+                    "additionalPromptContext": {
+                        "type": "string",
+                        "description": "Additional context to refine the prompt sent to the agent in n8n",
+                        "example": "Check if this matches yesterday's firewall certificate update",
+                        "maxLength": 500,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "categoryName",
+                    "detailedDescription",
+                    "incidentId",
+                    "incidentTitle"
+                ]
+            },
+            "AiFailureReportDTO": {
+                "type": "object",
+                "description": "AI workflow failure reported by n8n",
+                "properties": {
+                    "aiQueryId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Query ID (must match the path; optional)",
+                        "example": 6
+                    },
+                    "errorCode": {
+                        "type": "string",
+                        "description": "Failure code (sent by n8n)",
+                        "example": "EMBEDDING_FALLO",
+                        "maxLength": 60,
+                        "minLength": 0
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "Human-readable failure message",
+                        "example": "Could not generate the query embedding.",
+                        "maxLength": 500,
+                        "minLength": 0
+                    },
+                    "technicalDetail": {
+                        "type": "string",
+                        "description": "Technical detail (never shown to the end user)",
+                        "example": "ETIMEDOUT",
+                        "maxLength": 500,
+                        "minLength": 0
+                    },
+                    "processingTimeMs": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Time spent in n8n before the failure",
+                        "example": 1200
+                    }
+                },
+                "required": [
+                    "errorCode",
+                    "message"
+                ]
+            },
+            "UpdateKnowledgeArticleStatusDTO": {
+                "type": "object",
+                "description": "Activates/deactivates or verifies an article. Omitted fields do not change.",
+                "properties": {
+                    "active": {
+                        "type": "boolean",
+                        "description": "true to activate, false to deactivate",
+                        "example": true
+                    },
+                    "verified": {
+                        "type": "boolean",
+                        "description": "true to mark it as verified",
+                        "example": true
+                    }
+                }
+            },
+            "UpdateIncidentStatusRequestDTO": {
+                "type": "object",
+                "description": "Request to update the status of an existing incident",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "description": "New status of the incident",
+                        "enum": [
+                            "OPEN",
+                            "IN_AI_ANALYSIS",
+                            "ASSIGNED_TO_TECH",
+                            "RESOLVED",
+                            "CLOSED"
+                        ],
+                        "example": "IN_AI_ANALYSIS"
+                    }
+                },
+                "required": [
+                    "status"
+                ]
+            },
+            "CategoryResponseDTO": {
+                "type": "object",
+                "description": "Technical category of incidents and knowledge articles",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "active": {
+                        "type": "boolean"
+                    }
+                }
+            },
+            "WeeklyTrendDTO": {
+                "type": "object",
+                "description": "Weekly trend of reported and resolved incidents",
+                "properties": {
+                    "yearWeek": {
+                        "type": "string",
+                        "description": "ISO week identifier (Year-Week)",
+                        "example": "2026-W44"
+                    },
+                    "totalReported": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total incidents reported in that week",
+                        "example": 28
+                    },
+                    "totalResolved": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total incidents resolved or closed in that week",
+                        "example": 24
+                    }
+                }
+            },
+            "CategoryMetricDTO": {
+                "type": "object",
+                "description": "Incident frequency grouped by technical category",
+                "properties": {
+                    "categoryId": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Category ID",
+                        "example": 1
+                    },
+                    "categoryName": {
+                        "type": "string",
+                        "description": "Name of the technical category",
+                        "example": "Networking & Connectivity"
+                    },
+                    "incidentCount": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total number of incidents registered in this category",
+                        "example": 48
+                    },
+                    "percentageOfTotal": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Percentage of all incidents that belong to this category",
+                        "example": 32.0
+                    }
+                }
+            },
+            "MonthlyTrendDTO": {
+                "type": "object",
+                "description": "Monthly trend of reported vs resolved incidents",
+                "properties": {
+                    "yearMonth": {
+                        "type": "string",
+                        "description": "Month in YYYY-MM format",
+                        "example": "2026-10"
+                    },
+                    "totalReported": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Incidents registered in the month",
+                        "example": 80
+                    },
+                    "totalResolved": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "How many of those incidents are resolved or closed",
+                        "example": 72
+                    }
+                }
+            },
+            "AnalyticsDashboardDTO": {
+                "type": "object",
+                "description": "Key performance indicators (KPIs) computed with SQL/JPQL queries for the dashboard (RF06)",
+                "properties": {
+                    "totalIncidents": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "1. Total registered incidents",
+                        "example": 150
+                    },
+                    "resolvedIncidents": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Total incidents in RESOLVED or CLOSED status",
+                        "example": 126
+                    },
+                    "pendingIncidents": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "10a. Total pending incidents (OPEN, IN_AI_ANALYSIS, ASSIGNED_TO_TECH)",
+                        "example": 24
+                    },
+                    "overdueIncidents": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "10b. Total overdue pending incidents (> 48 hours unresolved)",
+                        "example": 9
+                    },
+                    "resolutionRatePercentage": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "5. Percentage of resolved incidents (0 to 100)",
+                        "example": 84.0
+                    },
+                    "averageResolutionTimeHours": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "6. Average resolution time in hours",
+                        "example": 4.35
+                    },
+                    "averageAiRatingScore": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Average usefulness rating of the AI responses (1 to 5 scale)",
+                        "example": 4.75
+                    },
+                    "topCategories": {
+                        "type": "array",
+                        "description": "2 and 7. Incidents per category, most frequent first",
+                        "items": {
+                            "$ref": "#/components/schemas/CategoryMetricDTO"
+                        }
+                    },
+                    "incidentsByPriority": {
+                        "type": "array",
+                        "description": "3. Distribution of incidents by priority level",
+                        "items": {
+                            "$ref": "#/components/schemas/PriorityMetricDTO"
+                        }
+                    },
+                    "incidentsByStatus": {
+                        "type": "array",
+                        "description": "4. Distribution of incidents by current status",
+                        "items": {
+                            "$ref": "#/components/schemas/StatusMetricDTO"
+                        }
+                    },
+                    "weeklyTrends": {
+                        "type": "array",
+                        "description": "8. Weekly incident trend",
+                        "items": {
+                            "$ref": "#/components/schemas/WeeklyTrendDTO"
+                        }
+                    },
+                    "monthlyTrends": {
+                        "type": "array",
+                        "description": "9. Monthly incident trend",
+                        "items": {
+                            "$ref": "#/components/schemas/MonthlyTrendDTO"
+                        }
+                    }
+                }
+            },
+            "PriorityMetricDTO": {
+                "type": "object",
+                "description": "Incidents grouped by priority level",
+                "properties": {
+                    "priority": {
+                        "type": "string",
+                        "description": "Priority level",
+                        "enum": [
+                            "LOW",
+                            "MEDIUM",
+                            "HIGH",
+                            "CRITICAL"
+                        ],
+                        "example": "CRITICAL"
+                    },
+                    "incidentCount": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Number of incidents with this priority",
+                        "example": 25
+                    },
+                    "percentageOfTotal": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Percentage of the filtered incidents",
+                        "example": 16.67
+                    }
+                }
+            },
+            "StatusMetricDTO": {
+                "type": "object",
+                "description": "Incidents grouped by status",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "description": "Incident status",
+                        "enum": [
+                            "OPEN",
+                            "IN_AI_ANALYSIS",
+                            "ASSIGNED_TO_TECH",
+                            "RESOLVED",
+                            "CLOSED"
+                        ],
+                        "example": "RESOLVED"
+                    },
+                    "incidentCount": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "Number of incidents in this status",
+                        "example": 63
+                    },
+                    "percentageOfTotal": {
+                        "type": "number",
+                        "format": "double",
+                        "description": "Percentage of the filtered incidents",
+                        "example": 42.0
+                    }
+                }
+            },
+            "AiQueryHistoryResponseDTO": {
+                "type": "object",
+                "description": "Detailed history of a query sent to the AI, including its response, sources and rating",
+                "properties": {
+                    "aiQueryId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "incidentId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "incidentTitle": {
+                        "type": "string"
+                    },
+                    "sentPrompt": {
+                        "type": "string"
+                    },
+                    "queryStatus": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "COMPLETED",
+                            "NO_RESULTS",
+                            "COMMUNICATION_ERROR",
+                            "FAILED"
+                        ]
+                    },
+                    "queriedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "failureCode": {
+                        "type": "string"
+                    },
+                    "failureMessage": {
+                        "type": "string"
+                    },
+                    "aiResponse": {
+                        "$ref": "#/components/schemas/AiResponseSummaryDTO"
+                    }
+                }
+            },
+            "AiResponseSummaryDTO": {
+                "type": "object",
+                "properties": {
+                    "aiResponseId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "suggestedDiagnosis": {
+                        "type": "string"
+                    },
+                    "solutionSteps": {
+                        "type": "string"
+                    },
+                    "confidenceScore": {
+                        "type": "number",
+                        "format": "double"
+                    },
+                    "processingTimeMs": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "respondedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "sources": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/SourceSummaryDTO"
+                        }
+                    },
+                    "rating": {
+                        "$ref": "#/components/schemas/RatingSummaryDTO"
+                    }
+                }
+            },
+            "RatingSummaryDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "score": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "helpful": {
+                        "type": "boolean"
+                    },
+                    "feedbackComment": {
+                        "type": "string"
+                    },
+                    "ratedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "SourceSummaryDTO": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "knowledgeArticleId": {
+                        "type": "integer",
+                        "format": "int64"
+                    },
+                    "sourceTitle": {
+                        "type": "string"
+                    },
+                    "referenceUrl": {
+                        "type": "string"
+                    },
+                    "citedSnippet": {
+                        "type": "string"
+                    },
+                    "similarityScore": {
+                        "type": "number",
+                        "format": "double"
+                    }
+                }
+            }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    }
+}
